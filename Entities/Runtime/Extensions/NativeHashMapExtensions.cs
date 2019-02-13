@@ -1,4 +1,4 @@
-// <copyright file="NativeHashMapExtensions.cs" company="BovineLabs">
+﻿// <copyright file="NativeHashMapExtensions.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,7 @@ namespace BovineLabs.Entities.Extensions
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using BovineLabs.Entities.Helpers;
+    using Helpers;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -56,13 +56,13 @@ namespace BovineLabs.Entities.Extensions
             internal NativeHashMapEnumerator(ref NativeHashMap<TKey, TValue> hashMap)
             {
                 // Convert to imposter so we can access internal fields
-                var imposter = (NativeHashMapImposter<TKey, TValue>)hashMap;
+                var imposter = (NativeHashMapImposter<TKey, TValue>) hashMap;
 
                 this.hashMap = hashMap;
                 this.index = 0;
                 this.entryIndex = -1;
 
-                this.buckets = (int*)imposter.Buffer->Buckets;
+                this.buckets = (int*) imposter.Buffer->Buckets;
                 this.nextPtrs = (int*) imposter.Buffer->Next;
                 this.keys = imposter.Buffer->Keys;
                 this.values = imposter.Buffer->Values;
