@@ -1,4 +1,4 @@
-﻿// <copyright file="NativeHashMapExtensions.cs" company="BovineLabs">
+// <copyright file="NativeHashMapExtensions.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -42,10 +42,12 @@ namespace BovineLabs.Entities.Extensions
         {
             private readonly NativeHashMapImposter<TKey, TValue> hashMap;
             private readonly int* buckets;
+            private readonly int* nextPtrs;
             private readonly byte* keys;
             private readonly byte* values;
 
             private int index;
+            private int entryIndex;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="NativeHashMapEnumerator{TKey, TValue}"/> struct.
@@ -57,17 +59,19 @@ namespace BovineLabs.Entities.Extensions
                 var imposter = (NativeHashMapImposter<TKey, TValue>)hashMap;
 
                 this.hashMap = hashMap;
-                this.index = -1;
+                this.index = 0;
+                this.entryIndex = -1;
 
                 this.buckets = (int*)imposter.Buffer->Buckets;
+                this.nextPtrs = (int*) imposter.Buffer->Next;
                 this.keys = imposter.Buffer->Keys;
                 this.values = imposter.Buffer->Values;
             }
 
             /// <inheritdoc />
             public KeyValuePair<TKey, TValue> Current => new KeyValuePair<TKey, TValue>(
-                UnsafeUtility.ReadArrayElement<TKey>(this.keys, this.index),
-                UnsafeUtility.ReadArrayElement<TValue>(this.values, this.index));
+                UnsafeUtility.ReadArrayElement<TKey>(this.keys, this.entryIndex),
+                UnsafeUtility.ReadArrayElement<TValue>(this.values, this.entryIndex));
 
             /// <inheritdoc />
             object IEnumerator.Current => this.Current;
@@ -77,9 +81,13 @@ namespace BovineLabs.Entities.Extensions
             {
                 var length = this.hashMap.Buffer->BucketCapacityMask + 1;
 
-                for (this.index += 1; this.index < length; this.index++)
+                for (; this.index < length; this.index++)
                 {
-                    if (this.buckets[this.index] != -1)
+                    this.entryIndex = this.entryIndex == -1
+                        ? this.buckets[this.index]
+                        : this.nextPtrs[this.entryIndex];
+
+                    if (this.entryIndex != -1)
                     {
                         return true;
                     }
@@ -91,7 +99,8 @@ namespace BovineLabs.Entities.Extensions
             /// <inheritdoc />
             public void Reset()
             {
-                this.index = -1;
+                this.index = 0;
+                this.entryIndex = -1;
             }
 
             /// <inheritdoc />
