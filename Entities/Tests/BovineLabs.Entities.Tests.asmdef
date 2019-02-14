@@ -5,7 +5,8 @@
         "BovineLabs.Entities",
         "Unity.Entities",
         "Unity.Collections",
-        "Unity.Burst"
+        "Unity.Burst",
+        "Unity.Mathematics"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
